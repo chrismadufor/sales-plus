@@ -56,7 +56,7 @@ export default function Signup() {
                 dispatch(
                   showToast({
                     status: "success",
-                    message: "Log in successful",
+                    message: "Sign up successful",
                   })
                 );
                 navigate("/")
