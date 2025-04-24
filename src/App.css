@@ -1,0 +1,72 @@
+@import url("https://fonts.googleapis.com/css2?family=Nunito+Sans:ital,opsz,wght@0,6..12,200..1000;1,6..12,200..1000&family=Roboto+Slab:wght@100..900&family=Turret+Road:wght@200;300;400;500;700;800&display=swap");
+
+body {
+  font-family: "Nunito Sans", sans-serif;
+  background-color: #eee;
+}
+
+:root {
+  --toastify-color-success: #0000c1 !important;
+}
+
+.turret {
+  font-family: "Turret Road";
+}
+
+.logo {
+  font-family: "Turret Road";
+  font-weight: 800;
+  color: #000071;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: "Roboto Slab";
+}
+
+input:focus,
+textarea:focus {
+  outline: 1px solid #0000c1;
+}
+
+input.password_input:focus,
+input.search_bar,
+input.checkbox {
+  outline: none;
+}
+
+/* .hide_scrollbar:: */
+.overflow-scroll::-webkit-scrollbar,
+.overflow-y-scroll::-webkit-scrollbar,
+.overflow-x-scroll::-webkit-scrollbar {
+  display: none;
+}
+
+.overflow-scroll,
+.overflow-y-scroll,
+.overflow-x-scroll {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+table {
+  font-size: 14px;
+}
+
+tr {
+  height: 50px;
+  border-color: #eee;
+}
+
+tr:nth-child(even) {
+  background-color: #f8f8f8;
+}
+
+th,
+td {
+  padding: 0 16px;
+}
