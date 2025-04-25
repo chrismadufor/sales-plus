@@ -61,7 +61,7 @@ export default function Table({
         </p>
       )}
       <div
-        className={`hidden md:block border border-gray-300 md:rounded-sm overflow-scroll bg-white min-h-[200px]`}
+        className={`hidden md:block border border-gray-300 md:rounded-sm overflow-scroll bg-white`}
       >
         <table className="w-full border-collapse text-sm text-gray-700 md:rounded-sm">
           <thead className="bg-gray-200">

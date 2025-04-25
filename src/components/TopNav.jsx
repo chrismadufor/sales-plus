@@ -29,7 +29,8 @@ export default function TopNav() {
           <div></div>
           <div className="flex gap-3 items-center">
             <div>
-              <h1 className="text-center text-xl text-primary-dark font-semibold uppercase">{userProfile.businessName}</h1>
+              <h1 className="text-right text-xl text-primary-dar font-semibold uppercase">{userProfile.businessName}</h1>
+              <p className="text-sm">{userProfile.email}</p>
             </div>
           </div>
           {navLinks && showNav && (

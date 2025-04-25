@@ -159,3 +159,13 @@ export const editProduct = async (data) => {
     return getErrorData(err);
   }
 };
+
+export const editCustomer = async (data) => {
+  try {
+    const productRef = await updateDoc(doc(db, "customers", data.id), data.values);
+    
+    return { error: false, data: productRef };
+  } catch (err) {
+    return getErrorData(err);
+  }
+};

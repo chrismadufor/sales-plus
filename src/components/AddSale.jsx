@@ -191,7 +191,7 @@ export default function AddSale({refetch, currentPage}) {
                     </p>
                     <p className="mb-4">
                       Select the customer from the dropdown below or add a new
-                      customer
+                      customer from customers page
                     </p>
                     <div className="">
                       <div className="w-full mb-2">
@@ -205,7 +205,7 @@ export default function AddSale({refetch, currentPage}) {
                       <a href="/dashboard/customers">
                         <button
                           type="button"
-                          className="h-12 rounded-md px-6 bg-primary text-white"
+                          className="h-12 rounded-md px-6 bg-primary text-white cursor-pointer"
                         >
                           Add Customer
                         </button>
@@ -289,7 +289,7 @@ export default function AddSale({refetch, currentPage}) {
                             ))}
                           </Table>
                         ) : (
-                          <EmptyTable loading={loading} columns={columns} />
+                          <EmptyTable loading={false} columns={columns} />
                         )}
                       </div>
                       {productList.length > 0 && (

@@ -1,10 +1,6 @@
 import React, { useEffect, useState } from "react";
 import SearchBox from "../../components/SearchBox";
-import {
-  formatPoundsNumber,
-  getSerialNumber,
-  pounds,
-} from "../../utils/utils";
+import { formatPoundsNumber, getSerialNumber, pounds } from "../../utils/utils";
 import EmptyTable from "../../components/EmptyTable";
 import Table from "../../components/Table";
 import Spinner from "../../components/Spinner";
@@ -32,7 +28,7 @@ export default function Products() {
   const [editLoading, setEditLoading] = useState(false);
   const [products, setProducts] = useState([]);
   const [showModal, setShowModal] = useState(false);
-  const [selectedProduct, setSelectedProduct] = useState(null)
+  const [selectedProduct, setSelectedProduct] = useState(null);
 
   const paginationData = {
     current_page: 1,
@@ -45,12 +41,13 @@ export default function Products() {
     "Created At",
     "Actions",
   ];
+
   const mobileColumns = ["Product Name", "Price", "Stock", "Actions"];
 
   const onOpenModal = (item) => {
-    setSelectedProduct(item)
-    setShowModal(true)
-  }
+    setSelectedProduct(item);
+    setShowModal(true);
+  };
 
   const getProducts = async (id) => {
     setLoading(true);
@@ -176,7 +173,7 @@ export default function Products() {
                 initialValues={{
                   name: selectedProduct.name,
                   stock: selectedProduct.stock,
-                  price: selectedProduct.price ,
+                  price: selectedProduct.price,
                 }}
                 validationSchema={Yup.object({
                   name: Yup.string().required("Product name is required"),
@@ -206,7 +203,7 @@ export default function Products() {
                       })
                     );
                     closeModal();
-                    getProducts(userId)
+                    getProducts(userId);
                   } else {
                     setEditLoading(false);
                     dispatch(
