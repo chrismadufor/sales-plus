@@ -17,7 +17,7 @@ export default function AddCustomer({ refetch, currentPage }) {
   const dispatch = useDispatch();
   const [loading, setLoading] = useState(false);
 
-  const closeModal = () => setShowModal(false);
+  const closeModalDiv = () => setShowModal(false);
   return (
     <div>
       <button
@@ -32,7 +32,7 @@ export default function AddCustomer({ refetch, currentPage }) {
             <div className="flex items-center justify-between pb-3 border-b border-gray-300">
               <h1 className="font-semibold text-2xl">Add New Customer</h1>
               <FontAwesomeIcon
-                onClick={closeModal}
+                onClick={closeModalDiv}
                 icon={faTimes}
                 className="text-2xl text-primary cursor-pointer"
               />
@@ -68,7 +68,7 @@ export default function AddCustomer({ refetch, currentPage }) {
                         message: "Customer added successfully",
                       })
                     );
-                    closeModal();
+                    closeModalDiv();
                     if (currentPage) refetch();
                   } else {
                     setLoading(false);
@@ -104,7 +104,7 @@ export default function AddCustomer({ refetch, currentPage }) {
                   </div>
                   <div className="grid grid-cols-2 gap-2">
                     <button
-                      onClick={closeModal}
+                      onClick={closeModalDiv}
                       className="cursor-pointer font-semibold w-full block h-12 rounded-lg mt-8 bg-red-500 text-white hover:bg-red-700 active:scale-[0.98]"
                       type="submit"
                     >

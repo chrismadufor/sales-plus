@@ -7,8 +7,9 @@ import {
   where,
   getDocs,
   addDoc,
+  runTransaction,
 } from "firebase/firestore";
-import { getErrorData } from "../utils/utils";
+import { formatDateTime, getErrorData } from "../utils/utils";
 
 const db = getFirestore();
 
@@ -77,9 +78,59 @@ export const addNewProduct = async (data) => {
 
 export const addNewSale = async (data) => {
   try {
-    const docRef = await addDoc(collection(db, "sales"), data);
-    return { error: false, data: docRef };
+    let items = data.products;
+    let userId = data.userId;
+    let customer = data.customer
+
+    await runTransaction(db, async (transaction) => {
+      // Step 1: Read all involved products first
+      const productDocs = await Promise.all(
+        items.map((item) => transaction.get(doc(db, "products", item.value)))
+      );
+
+      // Step 2: Validate stock availability for each product
+      productDocs.forEach((productDoc, index) => {
+        if (!productDoc.exists()) {
+          throw new Error(`Product not found: ${items[index].productId}`);
+        }
+        const currentStock = productDoc.data().stock ?? 0;
+        const qtyToSell = items[index].qty;
+
+        if (currentStock < qtyToSell) {
+          throw new Error(`Not enough stock for product: ${items[index].name}`);
+        }
+      });
+
+       // Step 3: Perform all stock updates (writes)
+       productDocs.forEach((productDoc, index) => {
+        const productRef = productDoc.ref;
+        const qtyToSell = items[index].qty;
+        const currentStock = productDoc.data().stock;
+
+        transaction.update(productRef, {
+          stock: currentStock - qtyToSell,
+        });
+      });
+
+      // Step 4: Create the sale document
+      const saleRef = doc(collection(db, "sales"));
+      const totalPrice = items.reduce((sum, item) => sum + item.qty * item.price, 0);
+
+      transaction.set(saleRef, {
+        items,
+        total: totalPrice,
+        userId,
+        customer,
+        createdAt: formatDateTime(new Date()),
+      });
+    });
+
+    return {
+      error: false,
+      data: { success: true, message: "Sale created and stock updated." },
+    };
   } catch (err) {
+    console.log("Error", err)
     return getErrorData(err);
   }
 };

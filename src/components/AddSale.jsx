@@ -10,69 +10,37 @@ import Modal from "./Modal";
 import { Formik, Form } from "formik";
 import * as Yup from "yup";
 import { showToast } from "../redux/slices/ToastSlice";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { SelectInput, SingleSelect, TextLabelInput } from "./FormFields";
-import { formatPoundsNumber, getSerialNumber } from "../utils/utils";
+import { errorHandler, formatPoundsNumber, getSerialNumber } from "../utils/utils";
 import Table from "./Table";
 import EmptyTable from "./EmptyTable";
 import AddCustomer from "./AddCustomer";
+import { addNewSale } from "../services/dashboardService";
+import Spinner from "./Spinner";
 
-export default function AddSale() {
+export default function AddSale({refetch, currentPage}) {
+  const userId = useSelector((state) => state.auth.userId);
   const [showModal, setShowModal] = useState(false);
   const dispatch = useDispatch();
-  const loading = false;
+    const [loading, setLoading] = useState(false);
   const [acceptTerms, setAcceptTerms] = useState(false);
+  const products = useSelector((state) => state.dashboard.products);
+  const customers = useSelector((state) => state.dashboard.customers);
+  const [productDataRaw, setProductDataRaw] = useState([]);
+  const [customerData, setCustomerData] = useState([]);
+  const [selectedCustomer, setSelectedCustomer] = useState("");
 
   const closeModal = () => {
     setShowModal(false);
-    setProductData(productDataRaw);
     setProductList([]);
   };
 
-  const customerData = [
-    {
-      label: "Chris Madufor",
-      value: "1",
-    },
-    {
-      label: "Cynthia Madufor",
-      value: "2",
-    },
-    {
-      label: "Zara Madufor",
-      value: "3",
-    },
-    {
-      label: "Chiazoka Madufor",
-      value: "4",
-    },
-  ];
-
-  const productDataRaw = [
-    {
-      label: "Electric Kettle",
-      value: "1",
-      price: "120",
-    },
-    {
-      label: "Philips Iron",
-      value: "2",
-      price: "220",
-    },
-    {
-      label: "Ox Standing Fan",
-      value: "3",
-      price: "190",
-    },
-    {
-      label: "Bedsheet Set",
-      value: "4",
-      price: "110",
-    },
-  ];
+  const onChangeCustomer = (selectedOption) => {
+    setSelectedCustomer(selectedOption);
+  };
 
   const columns = ["Product Name", "Quantity", "Amount", "Actions"];
-  const [productData, setProductData] = useState(productDataRaw);
   const [productList, setProductList] = useState([]);
   const [totalValue, setTotalValue] = useState(0);
 
@@ -131,6 +99,29 @@ export default function AddSale() {
     setTotalValue(total);
   }, [productList]);
 
+  useEffect(() => {
+    let tempProducts = [];
+    let tempCustomers = [];
+
+    for (let i = 0; i < products.length; i++) {
+      tempProducts.push({
+        label: products[i].name,
+        value: products[i].id,
+        price: products[i].price,
+      });
+    }
+
+    for (let i = 0; i < customers.length; i++) {
+      tempCustomers.push({
+        label: customers[i].name,
+        value: customers[i].id,
+      });
+    }
+
+    setProductDataRaw(tempProducts);
+    setCustomerData(tempCustomers);
+  }, []);
+
   return (
     <div>
       <button
@@ -153,26 +144,43 @@ export default function AddSale() {
             {/* form */}
             <div className="mt-5 overflow-scroll">
               <Formik
-                initialValues={{
-                  name: "",
-                  email: "",
-                  phone: "",
-                }}
-                validationSchema={Yup.object({
-                  name: Yup.string().required("Name is required"),
-                  phone: Yup.string().required("Phone number is required"),
-                  email: Yup.string()
-                    .email("Invalid email address")
-                    .required("Email is required"),
-                })}
-                onSubmit={async (values) => {
-                  console.log("Login", values);
-                  dispatch(
-                    showToast({
-                      status: "success",
-                      message: "Log in successful",
-                    })
-                  );
+                initialValues={{}}
+                onSubmit={async () => {
+                  setLoading(true);
+                  if (!selectedCustomer)
+                    return dispatch(
+                      showToast({
+                        status: "error",
+                        message: "Select a customer to proceed",
+                      })
+                    );
+
+                  let data = {
+                    userId: userId,
+                    customer: {name:selectedCustomer.label , id: selectedCustomer.value},
+                    products: productList,
+                    totalAmount: totalValue,
+                  };
+                  const response = await addNewSale(data);
+                  if (!response.error) {
+                    setLoading(false);
+                    dispatch(
+                      showToast({
+                        status: "success",
+                        message: "Sale has been added successfully",
+                      })
+                    );
+                    closeModal();
+                    if (currentPage) refetch()
+                  } else {
+                    setLoading(false);
+                    dispatch(
+                      showToast({
+                        status: "error",
+                        message: errorHandler(response.data),
+                      })
+                    );
+                  }
                 }}
               >
                 <Form>
@@ -189,13 +197,20 @@ export default function AddSale() {
                       <div className="w-full mb-2">
                         <SingleSelect
                           label=""
-                          name="customer"
-                          type="text"
-                          placeholder="Select a customer"
                           data={customerData}
+                          value={selectedCustomer}
+                          change={onChangeCustomer}
                         />
                       </div>
-                      <AddCustomer />
+                      <a href="/dashboard/customers">
+                        <button
+                          type="button"
+                          className="h-12 rounded-md px-6 bg-primary text-white"
+                        >
+                          Add Customer
+                        </button>
+                      </a>
+                      {/* <AddCustomer /> */}
                     </div>
                   </div>
                   {/* Items */}
@@ -211,7 +226,7 @@ export default function AddSale() {
                       <div>
                         <SingleSelect
                           label="Select a product"
-                          data={productData}
+                          data={productDataRaw}
                           change={onProductSelectChange}
                           // value={selectedFacility}
                         />
@@ -239,14 +254,20 @@ export default function AddSale() {
                                   {item.label}
                                 </td>
                                 <td className="px-5">
-                                  <button onClick={() => decreaseCount(index)}>
+                                  <button
+                                    type="button"
+                                    onClick={() => decreaseCount(index)}
+                                  >
                                     <FontAwesomeIcon
                                       icon={faMinusCircle}
                                       className="text-sm text-red-500 mr-2 cursor-pointer"
                                     />
                                   </button>{" "}
                                   {item.qty}{" "}
-                                  <button onClick={() => increaseCount(index)}>
+                                  <button
+                                    type="button"
+                                    onClick={() => increaseCount(index)}
+                                  >
                                     <FontAwesomeIcon
                                       icon={faPlusCircle}
                                       className="text-sm text-primary ml-2 cursor-pointer"
