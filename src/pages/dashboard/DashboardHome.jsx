@@ -105,6 +105,11 @@ export default function DashboardHome() {
         value = value + Number(data[i].total);
       }
       setSaleTotal(value);
+
+      let topSales = [...data]
+        .sort((a, b) => (b.price ?? 0) - (a.price ?? 0)) // handle undefined/null
+        .slice(0, 4);
+      setTopSales(topSales);
     } else {
       setLoading(false);
       dispatch(
@@ -178,10 +183,12 @@ export default function DashboardHome() {
       <div className="grid grid-cols-2 gap-5 mt-8">
         <div className="bg-white border border-gray-300 rounded-md p-5">
           <div className="flex items-center justify-between">
-            <p className="font-semibold">Latest Sales</p>
-            <p className="px-3 py-1 border border-gray-200 hover:border-primary cursor-pointer rounded-md bg-gray-50">
-              See all
-            </p>
+            <p className="font-semibold">Top Sales</p>
+            <a href="/dashboard/sales">
+              <p className="px-3 py-1 border border-gray-200 hover:border-primary cursor-pointer rounded-md bg-gray-50">
+                See all
+              </p>
+            </a>
           </div>
           <div className="mt-3">
             <table className="w-full border border-gray-300 border-collapse">
@@ -195,11 +202,15 @@ export default function DashboardHome() {
 
               {topSales.length > 0 && (
                 <tbody>
-                  <tr>
-                    <td className="text-left">Chris Madufor</td>
-                    <td className="text-left">23rd April, 2025</td>
-                    <td className="text-left">515</td>
-                  </tr>
+                  {topSales.map((item, index) => (
+                    <tr key={index}>
+                      <td className="text-left">{item.customer.name}</td>
+                      <td className="text-left">{item.createdAt}</td>
+                      <td className="text-left">
+                        {formatPoundsNumber(item.total)}
+                      </td>
+                    </tr>
+                  ))}
                 </tbody>
               )}
             </table>
@@ -213,9 +224,11 @@ export default function DashboardHome() {
         <div className="bg-white border border-gray-300 rounded-md p-5">
           <div className="flex items-center justify-between">
             <p className="font-semibold">Top Products</p>
-            <p className="px-3 py-1 border border-gray-200 hover:border-primary cursor-pointer rounded-md bg-gray-50">
-              See all
-            </p>
+            <a href="/dashboard/products">
+              <p className="px-3 py-1 border border-gray-200 hover:border-primary cursor-pointer rounded-md bg-gray-50">
+                See all
+              </p>
+            </a>
           </div>
           <div className="mt-3">
             <table className="w-full border border-gray-300 border-collapse">
