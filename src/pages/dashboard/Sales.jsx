@@ -10,6 +10,9 @@ import { showToast } from "../../redux/slices/ToastSlice";
 import AddSale from "../../components/AddSale";
 import { fetchUserSales } from "../../services/dashboardService";
 import { saveSales } from "../../redux/slices/dashboardSlice";
+import { faTimes } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import Modal from "../../components/Modal";
 
 export default function Sales() {
   const dispatch = useDispatch();
@@ -19,8 +22,24 @@ export default function Sales() {
   const paginationData = {
     current_page: 1,
   };
-  const columns = ["Customer Name", "Amount", "Items Purchased", "Date"];
-  const mobileColumns = ["Customer Name", "Amount", "Date"];
+  const columns = [
+    "Customer Name",
+    "Amount",
+    "Items Purchased",
+    "Date",
+    "Actions",
+  ];
+  const mobileColumns = ["Customer Name", "Amount", "Date", "Actions"];
+
+  const [showModal, setShowModal] = useState(false);
+  const [selectedItem, setSelectedItem] = useState(null);
+  const onOpenModal = (item) => {
+    console.log(item);
+    setSelectedItem(item);
+    setShowModal(true);
+  };
+
+  const closeModal = () => setShowModal(false);
 
   const getSales = async (id) => {
     setLoading(true);
@@ -82,7 +101,11 @@ export default function Sales() {
                 // changePage={changePage}
               >
                 {sales.map((item, index) => (
-                  <tr onClick={() => {}} className="border-b h-14" key={index}>
+                  <tr
+                    key={index}
+                    onClick={() => {}}
+                    className="border-b h-14"
+                  >
                     <td className="pl-5 w-12 text-center">
                       {getSerialNumber(index, paginationData.current_page)}
                     </td>
@@ -90,14 +113,14 @@ export default function Sales() {
                     <td className="px-5">{formatPoundsNumber(item.total)}</td>
                     <td className="px-5">{getItems(item.items)}</td>
                     <td className="px-5">{item.createdAt}</td>
-                    {/* <td className="px-5 capitalize font-semibold">
+                    <td className="px-5 capitalize font-semibold">
                       <button
-                        // onClick={() => onOpenModal(item)}
-                        className="primary_bg text-white rounded-md px-3 py-1"
+                        onClick={() => onOpenModal(item)}
+                        className="bg-primary text-white rounded-md px-3 py-1 cursor-pointer"
                       >
                         View
                       </button>
-                    </td> */}
+                    </td>
                   </tr>
                 ))}
               </Table>
@@ -135,6 +158,55 @@ export default function Sales() {
             )}
           </div>
         </div>
+      )}
+      {showModal && (
+        <Modal maxW={"max-w-xl"}>
+          <div className="bg-white px-5 py-8">
+            <div className="flex items-center justify-between pb-3 border-b border-gray-300">
+              <h1 className="font-semibold text-2xl">Sales Details</h1>
+              <FontAwesomeIcon
+                onClick={closeModal}
+                icon={faTimes}
+                className="text-2xl text-primary cursor-pointer"
+              />
+            </div>
+            {/* form */}
+            <div className="mt-5">
+              <div>
+                <h1 className="text-xs mb-1 uppercase font-semibold">
+                  Customer Name
+                </h1>
+                <p className="">{selectedItem.customer.name}</p>
+              </div>
+              <div className="mt-5">
+                <h1 className="text-xs mb-1 uppercase font-semibold">Date</h1>
+                <p className="">{selectedItem.createdAt}</p>
+              </div>
+              <div className="mt-5">
+                <h1 className="text-xs font-semibold mb-3 uppercase">
+                  Purchased items
+                </h1>
+                <div>
+                  {selectedItem.items.map((item, index) => (
+                    <div
+                      key={index}
+                      className="flex item-center justify-between py-2 border-t border-gray-200"
+                    >
+                      <p className="">{item.label}</p>
+                      <p className="">
+                        {item.qty} x {item.price}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+              <div className="pt-3 border-t border-gray-200 flex items-center justify-between">
+                <h1 className="mb-1 uppercase font-semibold">Total</h1>
+                <p className="font-semibold text-xl">{formatPoundsNumber(selectedItem.total)}</p>
+              </div>
+            </div>
+          </div>
+        </Modal>
       )}
     </div>
   );

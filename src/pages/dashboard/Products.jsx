@@ -1,26 +1,56 @@
 import React, { useEffect, useState } from "react";
 import SearchBox from "../../components/SearchBox";
-import { formatPoundsNumber, getSerialNumber } from "../../utils/utils";
+import {
+  formatPoundsNumber,
+  getSerialNumber,
+  pounds,
+} from "../../utils/utils";
 import EmptyTable from "../../components/EmptyTable";
 import Table from "../../components/Table";
 import Spinner from "../../components/Spinner";
 import AddProduct from "../../components/AddProduct";
 import { useDispatch, useSelector } from "react-redux";
 import { errorHandler } from "../../utils/utils";
-import { fetchUserProducts } from "../../services/dashboardService";
+import {
+  editProduct,
+  fetchUserProducts,
+} from "../../services/dashboardService";
 import { showToast } from "../../redux/slices/ToastSlice";
 import { saveProducts } from "../../redux/slices/dashboardSlice";
+
+import Modal from "../../components/Modal";
+import { Formik, Form } from "formik";
+import * as Yup from "yup";
+import { faTimes } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { TextLabelInput } from "../../components/FormFields";
 
 export default function Products() {
   const dispatch = useDispatch();
   const userId = useSelector((state) => state.auth.userId);
   const [loading, setLoading] = useState(false);
+  const [editLoading, setEditLoading] = useState(false);
   const [products, setProducts] = useState([]);
+  const [showModal, setShowModal] = useState(false);
+  const [selectedProduct, setSelectedProduct] = useState(null)
+
   const paginationData = {
     current_page: 1,
   };
-  const columns = ["Product Name", "Price", "Stock", "Qty Sold", "Created At"];
+  const columns = [
+    "Product Name",
+    "Price",
+    "Stock",
+    "Qty Sold",
+    "Created At",
+    "Actions",
+  ];
   const mobileColumns = ["Product Name", "Price", "Stock", "Actions"];
+
+  const onOpenModal = (item) => {
+    setSelectedProduct(item)
+    setShowModal(true)
+  }
 
   const getProducts = async (id) => {
     setLoading(true);
@@ -39,6 +69,8 @@ export default function Products() {
       );
     }
   };
+
+  const closeModal = () => setShowModal(false);
 
   useEffect(() => {
     getProducts(userId);
@@ -81,14 +113,14 @@ export default function Products() {
                     <td className="px-5">{item.stock}</td>
                     <td className="px-5">{item.qtySold}</td>
                     <td className="px-5">{item.createdAt}</td>
-                    {/* <td className="px-5 capitalize font-semibold">
+                    <td className="px-5 capitalize font-semibold">
                       <button
-                        // onClick={() => onOpenModal(item)}
-                        className="primary_bg text-white rounded-md px-3 py-1"
+                        onClick={() => onOpenModal(item)}
+                        className="bg-primary text-white rounded-md px-3 py-1"
                       >
-                        View
+                        Edit
                       </button>
-                    </td> */}
+                    </td>
                   </tr>
                 ))}
               </Table>
@@ -126,6 +158,108 @@ export default function Products() {
             )}
           </div>
         </div>
+      )}
+      {showModal && (
+        <Modal maxW={"max-w-xl"}>
+          <div className="bg-white px-5 py-8">
+            <div className="flex items-center justify-between pb-3 border-b border-gray-300">
+              <h1 className="font-semibold text-2xl">Edit Product</h1>
+              <FontAwesomeIcon
+                onClick={closeModal}
+                icon={faTimes}
+                className="text-2xl text-primary cursor-pointer"
+              />
+            </div>
+            {/* form */}
+            <div className="mt-5">
+              <Formik
+                initialValues={{
+                  name: selectedProduct.name,
+                  stock: selectedProduct.stock,
+                  price: selectedProduct.price ,
+                }}
+                validationSchema={Yup.object({
+                  name: Yup.string().required("Product name is required"),
+                  stock: Yup.number()
+                    .typeError("Stock must be a number")
+                    .required("Stock is required")
+                    .integer("Must be an integer")
+                    .positive("Stock must be a positive number"),
+                  price: Yup.number()
+                    .typeError("Price must be a number")
+                    .required("Price is required")
+                    .positive("Price must be a positive number"),
+                })}
+                onSubmit={async (values) => {
+                  setEditLoading(true);
+                  let data = {
+                    id: selectedProduct.id,
+                    values,
+                  };
+                  const response = await editProduct(data);
+                  if (!response.error) {
+                    setEditLoading(false);
+                    dispatch(
+                      showToast({
+                        status: "success",
+                        message: "Product updated successfully",
+                      })
+                    );
+                    closeModal();
+                    getProducts(userId)
+                  } else {
+                    setEditLoading(false);
+                    dispatch(
+                      showToast({
+                        status: "error",
+                        message: errorHandler(response.data),
+                      })
+                    );
+                  }
+                }}
+              >
+                <Form>
+                  <div className="grid grid-cols-1 gap-4">
+                    <TextLabelInput
+                      label="Product Name"
+                      name="name"
+                      type="text"
+                      placeholder="Iphone 14 Pro"
+                    />
+                    <TextLabelInput
+                      label={`Price (${pounds})`}
+                      name="price"
+                      type="number"
+                      placeholder="1500"
+                    />
+                    <TextLabelInput
+                      label="Stock"
+                      name="stock"
+                      type="number"
+                      placeholder="100"
+                    />
+                  </div>
+                  <div className="grid grid-cols-2 gap-2">
+                    <button
+                      onClick={closeModal}
+                      className="cursor-pointer font-semibold w-full block h-12 rounded-lg mt-8 bg-red-500 text-white hover:bg-red-700 active:scale-[0.98]"
+                      type="submit"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      className="cursor-pointer font-semibold w-full block h-12 rounded-lg mt-8 bg-primary text-white hover:bg-primary-dark active:scale-[0.98]"
+                      type="submit"
+                      disabled={loading}
+                    >
+                      {editLoading ? <Spinner /> : "Edit"}
+                    </button>
+                  </div>
+                </Form>
+              </Formik>
+            </div>
+          </div>
+        </Modal>
       )}
     </div>
   );

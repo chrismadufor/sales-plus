@@ -8,6 +8,7 @@ import {
   getDocs,
   addDoc,
   runTransaction,
+  updateDoc,
 } from "firebase/firestore";
 import { formatDateTime, getErrorData } from "../utils/utils";
 
@@ -80,7 +81,7 @@ export const addNewSale = async (data) => {
   try {
     let items = data.products;
     let userId = data.userId;
-    let customer = data.customer
+    let customer = data.customer;
 
     await runTransaction(db, async (transaction) => {
       // Step 1: Read all involved products first
@@ -101,8 +102,8 @@ export const addNewSale = async (data) => {
         }
       });
 
-       // Step 3: Perform all stock updates (writes)
-       productDocs.forEach((productDoc, index) => {
+      // Step 3: Perform all stock updates (writes)
+      productDocs.forEach((productDoc, index) => {
         const productRef = productDoc.ref;
         const qtyToSell = items[index].qty;
         const currentStock = productDoc.data().stock;
@@ -110,13 +111,16 @@ export const addNewSale = async (data) => {
 
         transaction.update(productRef, {
           stock: currentStock - qtyToSell,
-          qtySold: soldNumber + qtyToSell
+          qtySold: soldNumber + qtyToSell,
         });
       });
 
       // Step 4: Create the sale document
       const saleRef = doc(collection(db, "sales"));
-      const totalPrice = items.reduce((sum, item) => sum + item.qty * item.price, 0);
+      const totalPrice = items.reduce(
+        (sum, item) => sum + item.qty * item.price,
+        0
+      );
 
       transaction.set(saleRef, {
         items,
@@ -132,7 +136,7 @@ export const addNewSale = async (data) => {
       data: { success: true, message: "Sale created and stock updated." },
     };
   } catch (err) {
-    console.log("Error", err)
+    console.log("Error", err);
     return getErrorData(err);
   }
 };
@@ -141,6 +145,16 @@ export const addNewCustomer = async (data) => {
   try {
     const docRef = await addDoc(collection(db, "customers"), data);
     return { error: false, data: docRef };
+  } catch (err) {
+    return getErrorData(err);
+  }
+};
+
+export const editProduct = async (data) => {
+  try {
+    const productRef = await updateDoc(doc(db, "products", data.id), data.values);
+    
+    return { error: false, data: productRef };
   } catch (err) {
     return getErrorData(err);
   }
