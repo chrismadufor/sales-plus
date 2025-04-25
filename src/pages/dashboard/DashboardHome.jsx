@@ -19,22 +19,28 @@ import {
 import {
   fetchUserCustomers,
   fetchUserProducts,
+  fetchUserSales,
 } from "../../services/dashboardService";
 import { showToast } from "../../redux/slices/ToastSlice";
-import { saveCustomers, saveProducts } from "../../redux/slices/dashboardSlice";
+import {
+  saveCustomers,
+  saveProducts,
+  saveSales,
+} from "../../redux/slices/dashboardSlice";
 
 export default function DashboardHome() {
   const dispatch = useDispatch();
   const userId = useSelector((state) => state.auth.userId);
   const userProfile = useSelector((state) => state.auth.userProfile);
   const [products, setProducts] = useState([]);
-  // const [sales, setSales] = useState([]);
+  const [sales, setSales] = useState([]);
   const [customers, setCustomers] = useState([]);
   const [loading, setLoading] = useState(false);
   const [inventoryValue, setInventoryValue] = useState(0);
   const [inventoryCount, setInventoryCount] = useState(0);
   const [topProducts, setTopProducts] = useState([]);
   const [topSales, setTopSales] = useState([]);
+  const [saleTotal, setSaleTotal] = useState(0);
 
   const getProducts = async (id) => {
     setLoading(true);
@@ -85,9 +91,35 @@ export default function DashboardHome() {
     }
   };
 
+  const getSales = async (id) => {
+    setLoading(true);
+    const response = await fetchUserSales(id);
+    if (!response.error) {
+      setLoading(false);
+      let data = response.data;
+      setSales(data);
+      dispatch(saveSales(data));
+
+      let value = 0;
+      for (let i = 0; i < data.length; i++) {
+        value = value + Number(data[i].total);
+      }
+      setSaleTotal(value);
+    } else {
+      setLoading(false);
+      dispatch(
+        showToast({
+          status: "error",
+          message: errorHandler(response.data),
+        })
+      );
+    }
+  };
+
   useEffect(() => {
     getProducts(userId);
     getCustomers(userId);
+    getSales(userId);
   }, []);
 
   return (
@@ -98,7 +130,7 @@ export default function DashboardHome() {
         </h1>
         <div className="hidden xl:flex gap-5">
           <AddProduct refetch={() => getProducts(userId)} currentPage={true} />
-          <AddSale />
+          <AddSale refetch={() => getSales(userId)} currentPage={true} />
         </div>
       </div>
       <p className="font-semibold mb-3 text-lg">Dashboard Analytics</p>
@@ -107,13 +139,13 @@ export default function DashboardHome() {
         <StatsItem
           loading={loading}
           title={"Total Sales"}
-          value={0}
+          value={formatPoundsNumber(saleTotal)}
           icon={faCoins}
         />
         <StatsItem
           loading={loading}
           title={"Total Sales Count"}
-          value={0}
+          value={sales.length}
           icon={faList}
         />
         <StatsItem

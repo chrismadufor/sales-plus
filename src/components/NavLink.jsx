@@ -1,19 +1,15 @@
 "use client";
 
 import { useLocation } from "react-router-dom";
-import { useSelector } from "react-redux";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
 export default function NavLink({
   name,
   icon,
   link,
-  approval,
-  mobile,
-  subs,
 }) {
-  const userData = useSelector((state) => state.auth.user);
   const location = useLocation();
+  const mobile = false
 
   // Full pathname like /dashboard/settings
   const pathname = location.pathname;
@@ -27,24 +23,8 @@ export default function NavLink({
     (link === "/dashboard/" + segment && name !== "dashboard") ||
     (name === "dashboard" && segment === "dashboard");
 
-  const hasSubmitted = () => {
-    if (userData.userType === "consultant") {
-      return userData?.accountVerified;
-    } else if (userData.userType === "company") {
-      return userData?.accountVerified;
-    }
-  };
-  const submitted = hasSubmitted();
-
   return (
     <div
-      className={`${
-        (!submitted && approval) ||
-        (submitted && name === "registration") ||
-        (userData.userType === "consultant" && !userData.subscription && subs)
-          ? "hidden"
-          : ""
-      }`}
     >
       <div
         onClick={() => {

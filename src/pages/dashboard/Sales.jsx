@@ -15,51 +15,44 @@ export default function Sales() {
   const dispatch = useDispatch();
   const userId = useSelector((state) => state.auth.userId);
   const [loading, setLoading] = useState(false);
-  const [sales, setSales] = useState([])
+  const [sales, setSales] = useState([]);
   const paginationData = {
     current_page: 1,
   };
-  const columns = [
-    "Customer Name",
-    "Amount",
-    "Items Purchased",
-    "Date",
-  ];
+  const columns = ["Customer Name", "Amount", "Items Purchased", "Date"];
   const mobileColumns = ["Customer Name", "Amount", "Date"];
-  
-    const getSales = async (id) => {
-      setLoading(true);
-      const response = await fetchUserSales(id);
-      if (!response.error) {
-        setLoading(false);
-        console.log(response.data)
-        setSales(response.data);
-        dispatch(saveSales(response.data));
-      } else {
-        setLoading(false);
-        dispatch(
-          showToast({
-            status: "error",
-            message: errorHandler(response.data),
-          })
-        );
-      }
-    };
 
-    const getItems = (data) => {
-      let final = ""
-      for (let i=0; i< data.length; i++) {
-        let str = `${data[i].label}(${data[i].qty})`
-        final = str + ", " + final
-      }
-      console.log(final)
-      return final
+  const getSales = async (id) => {
+    setLoading(true);
+    const response = await fetchUserSales(id);
+    if (!response.error) {
+      setLoading(false);
+      setSales(response.data);
+      dispatch(saveSales(response.data));
+    } else {
+      setLoading(false);
+      dispatch(
+        showToast({
+          status: "error",
+          message: errorHandler(response.data),
+        })
+      );
     }
-  
-    useEffect(() => {
-      getSales(userId);
-    }, []);
-  
+  };
+
+  const getItems = (data) => {
+    let final = "";
+    for (let i = 0; i < data.length; i++) {
+      let str = `${data[i].label}(${data[i].qty})`;
+      final = str + ", " + final;
+    }
+    return final;
+  };
+
+  useEffect(() => {
+    getSales(userId);
+  }, []);
+
   return (
     <div>
       <div className="my-5 flex justify-between">

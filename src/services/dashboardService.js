@@ -106,9 +106,11 @@ export const addNewSale = async (data) => {
         const productRef = productDoc.ref;
         const qtyToSell = items[index].qty;
         const currentStock = productDoc.data().stock;
+        const soldNumber = productDoc.data().qtySold;
 
         transaction.update(productRef, {
           stock: currentStock - qtyToSell,
+          qtySold: soldNumber + qtyToSell
         });
       });
 
