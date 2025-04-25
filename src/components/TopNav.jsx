@@ -1,9 +1,9 @@
 "use client";
 
-import { faBars, faSignOut, faTimes } from "@fortawesome/free-solid-svg-icons";
+import { faBars, faTimes } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import React, { useState } from "react";
-import { useDispatch, useSelector } from "react-redux";
+import { useSelector } from "react-redux";
 import NavLink from "./NavLink";
 import { navLinks } from "../data/nav";
 // import { setLogout } from "@/redux/slices/authSlice";
@@ -11,8 +11,7 @@ import { navLinks } from "../data/nav";
 export default function TopNav() {
   // const dispatch = useDispatch();
   const [showNav, setShowNav] = useState(false);
-  const user = useSelector((state) => state.auth.user);
-  const role = user.userType;
+    const userProfile = useSelector(state => state.auth.userProfile)
 
   // const logout = () => {
   //   dispatch(setLogout(true));
@@ -30,7 +29,7 @@ export default function TopNav() {
           <div></div>
           <div className="flex gap-3 items-center">
             <div>
-              <h1 className="text-center text-xl text-primary-dark font-semibold uppercase">Denario Stores</h1>
+              <h1 className="text-center text-xl text-primary-dark font-semibold uppercase">{userProfile.businessName}</h1>
             </div>
           </div>
           {navLinks && showNav && (
@@ -45,10 +44,6 @@ export default function TopNav() {
                     name={link.name}
                     icon={link.icon}
                     link={link.link}
-                    role={role}
-                    mobile={true}
-                    approval={link.needsApproval}
-                    subs={link.needsSub}
                   />
                 ))}
                 {/* <div

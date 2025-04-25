@@ -1,17 +1,43 @@
-import React from "react";
+import React, { useState } from "react";
 import { Formik, Form } from "formik";
 import * as Yup from "yup";
 import { showToast } from "../redux/slices/ToastSlice";
 import { useDispatch } from "react-redux";
 import { PasswordInput, TextLabelInput } from "../components/FormFields";
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from "react-router-dom";
+import { signInWithEmailAndPassword } from "firebase/auth";
+import { auth } from "../../firebase";
+import Spinner from "../components/Spinner";
+import { setUserId, setUserProfile } from "../redux/slices/authSlice";
+import { fetchUserProfile } from "../services/dashboardService";
+import { errorHandler } from "../utils/utils";
 
 export default function Signin() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const loading = false;
+  const [loading, setLoading] = useState(false);
+  const fetchUser = async (id) => {
+    const response = await fetchUserProfile(id);
+    if (!response.error) {
+      dispatch(
+        showToast({
+          status: "success",
+          message: "Log in successful",
+        })
+      );
+      dispatch(setUserProfile(response.data));
+      navigate("/dashboard");
+    } else {
+      dispatch(
+        showToast({
+          status: "error",
+          message: errorHandler(response.data),
+        })
+      );
+    }
+  };
   return (
-    <div className="bg-gray-50 min-h-screen flex items-center justify-center">
+    <div className="bg-gray-50 auth_bg min-h-screen flex items-center justify-center">
       <div className="w-full max-w-xl mx-auto">
         <div>
           <h1 className="text-center text-3xl mb-5 logo">+ Sales Plus +</h1>
@@ -34,14 +60,26 @@ export default function Signin() {
                 password: Yup.string().required("Password is required"),
               })}
               onSubmit={async (values) => {
-                console.log("Login", values);
-                dispatch(
-                  showToast({
-                    status: "success",
-                    message: "Log in successful",
-                  })
-                );
-                navigate("/dashboard")
+                setLoading(true);
+                try {
+                  const userCredential = await signInWithEmailAndPassword(
+                    auth,
+                    values.email,
+                    values.password
+                  );
+                  setLoading(false);
+
+                  dispatch(setUserId(userCredential.user.uid));
+                  fetchUser(userCredential.user.uid);
+                } catch (error) {
+                  setLoading(false);
+                  dispatch(
+                    showToast({
+                      status: "error",
+                      message: "Check credentials and try again",
+                    })
+                  );
+                }
               }}
             >
               <Form>

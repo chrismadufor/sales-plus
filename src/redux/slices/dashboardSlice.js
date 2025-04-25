@@ -1,30 +1,26 @@
 import { createSlice } from "@reduxjs/toolkit";
 
 const initialState = {
-  services: [],
-  sectors: [],
-  reportParams: [],
-  subTypes: []
+  products: [],
+  sales: [],
+  customers: [],
 };
 
 const dashboardSlice = createSlice({
   name: "dashboard",
   initialState,
   reducers: {
-    saveServices: (state, { payload }) => {
-      state.services = payload;
+    saveProducts: (state, { payload }) => {
+      state.products = payload;
     },
-    saveSectors: (state, { payload }) => {
-      state.sectors = payload;
+    saveSales: (state, { payload }) => {
+      state.sales = payload;
     },
-    saveReportParams: (state, { payload }) => {
-      state.reportParams = payload;
-    },
-    saveSubTypes: (state, { payload }) => {
-      state.subTypes = payload;
+    saveCustomers: (state, { payload }) => {
+      state.customers = payload;
     },
   },
 });
 
-export const { saveServices, saveSectors, saveReportParams, saveSubTypes } = dashboardSlice.actions;
+export const { saveProducts, saveSales, saveCustomers } = dashboardSlice.actions;
 export default dashboardSlice.reducer;

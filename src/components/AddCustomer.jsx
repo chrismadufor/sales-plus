@@ -5,13 +5,17 @@ import Modal from "./Modal";
 import { Formik, Form } from "formik";
 import * as Yup from "yup";
 import { showToast } from "../redux/slices/ToastSlice";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { TextLabelInput } from "./FormFields";
+import { errorHandler, formatDateTime } from "../utils/utils";
+import { addNewCustomer } from "../services/dashboardService";
+import Spinner from "./Spinner";
 
-export default function AddCustomer() {
+export default function AddCustomer({ refetch, currentPage }) {
+  const userId = useSelector((state) => state.auth.userId);
   const [showModal, setShowModal] = useState(false);
   const dispatch = useDispatch();
-  const loading = false;
+  const [loading, setLoading] = useState(false);
 
   const closeModal = () => setShowModal(false);
   return (
@@ -49,13 +53,32 @@ export default function AddCustomer() {
                     .required("Email is required"),
                 })}
                 onSubmit={async (values) => {
-                  console.log("Login", values);
-                  dispatch(
-                    showToast({
-                      status: "success",
-                      message: "Log in successful",
-                    })
-                  );
+                  setLoading(true);
+                  let data = {
+                    ...values,
+                    userId: userId,
+                    createdAt: formatDateTime(new Date()),
+                  };
+                  const response = await addNewCustomer(data);
+                  if (!response.error) {
+                    setLoading(false);
+                    dispatch(
+                      showToast({
+                        status: "success",
+                        message: "Customer added successfully",
+                      })
+                    );
+                    closeModal();
+                    if (currentPage) refetch();
+                  } else {
+                    setLoading(false);
+                    dispatch(
+                      showToast({
+                        status: "error",
+                        message: errorHandler(response.data),
+                      })
+                    );
+                  }
                 }}
               >
                 <Form>

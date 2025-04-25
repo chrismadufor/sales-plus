@@ -12,7 +12,7 @@ import * as Yup from "yup";
 import { showToast } from "../redux/slices/ToastSlice";
 import { useDispatch } from "react-redux";
 import { SelectInput, SingleSelect, TextLabelInput } from "./FormFields";
-import { formatEurosNumber, getSerialNumber } from "../utils/utils";
+import { formatPoundsNumber, getSerialNumber } from "../utils/utils";
 import Table from "./Table";
 import EmptyTable from "./EmptyTable";
 import AddCustomer from "./AddCustomer";
@@ -254,7 +254,7 @@ export default function AddSale() {
                                   </button>
                                 </td>
                                 <td className="px-5">
-                                  {formatEurosNumber(item.price * item.qty)}
+                                  {formatPoundsNumber(item.price * item.qty)}
                                 </td>
                                 <td className="px-5 capitalize font-semibold">
                                   <button
@@ -275,7 +275,7 @@ export default function AddSale() {
                         <div className="flex items-center justify-between px-5 mt-3">
                           <p className="font-semibold">Total:</p>
                           <p className="font-semibold text-3xl">
-                            {formatEurosNumber(totalValue)}
+                            {formatPoundsNumber(totalValue)}
                           </p>
                         </div>
                       )}

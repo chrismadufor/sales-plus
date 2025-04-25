@@ -3,7 +3,7 @@ import moment from "moment";
 const characters =
   "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
 
-export const euros = "€";
+export const pounds = "£";
 
 export const perPage = 100;
 
@@ -37,12 +37,12 @@ export const getErrorData = (err) => {
       ? {
           error: true,
           data: { message: err.message },
-          status: null,
+          // status: null,
         }
       : {
           error: true,
           data: err?.response?.data,
-          status: err?.response?.status,
+          // status: err?.response?.status,
         };
   return errData;
 };
@@ -85,12 +85,12 @@ export const formatNumber = (num) => {
   return str;
 };
 
-export const formatEurosNumber = (num) => {
-  if (!num) return euros + "0";
+export const formatPoundsNumber = (num) => {
+  if (!num) return pounds + "0";
   num = +num;
   // if (num > 999999) return `${(num / 1000000).toFixed(1)} Mil`;
   let str = num.toLocaleString("en-US");
-  return euros + str;
+  return pounds + str;
 };
 
 export const returnKeys = (data) => {

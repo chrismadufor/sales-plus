@@ -3,7 +3,8 @@ import { createSlice } from "@reduxjs/toolkit";
 const initialState = {
   email: "",
   resetToken: "",
-  user: {},
+  userId: "",
+  userProfile: {},
   fetchUserCall: true,
   logout: false,
 };
@@ -18,8 +19,11 @@ const authSlice = createSlice({
     saveResetToken: (state, { payload }) => {
       state.resetToken = payload;
     },
-    setUser: (state, { payload }) => {
-      state.user = payload;
+    setUserId: (state, { payload }) => {
+      state.userId = payload;
+    },
+    setUserProfile: (state, { payload }) => {
+      state.userProfile = payload;
     },
     changeFetchUserCall: (state, { payload }) => {
       state.fetchUserCall = payload;
@@ -30,5 +34,12 @@ const authSlice = createSlice({
   },
 });
 
-export const { saveEmail, saveResetToken, setUser, setLogout, changeFetchUserCall } = authSlice.actions;
+export const {
+  saveEmail,
+  saveResetToken,
+  setUserId,
+  setUserProfile,
+  setLogout,
+  changeFetchUserCall,
+} = authSlice.actions;
 export default authSlice.reducer;

@@ -1,17 +1,25 @@
-import React from "react";
+import React, { useState } from "react";
 import { Formik, Form } from "formik";
 import * as Yup from "yup";
 import { showToast } from "../redux/slices/ToastSlice";
 import { useDispatch } from "react-redux";
 import { PasswordInput, TextLabelInput } from "../components/FormFields";
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from "react-router-dom";
+
+// firebase
+import { doc, setDoc, getFirestore } from "firebase/firestore";
+import { auth } from "../../firebase";
+import { createUserWithEmailAndPassword } from "firebase/auth";
+import Spinner from "../components/Spinner";
+
+const db = getFirestore();
 
 export default function Signup() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const loading = false;
+  const [loading, setLoading] = useState(false);
   return (
-    <div className="bg-gray-50 min-h-screen py-20 flex items-center justify-center">
+    <div className="bg-gray-50 auth_bg min-h-screen py-20 flex items-center justify-center">
       <div className="w-full max-w-xl mx-auto">
         <div>
           <h1 className="text-center text-3xl mb-5 logo">+ Sales Plus +</h1>
@@ -48,18 +56,49 @@ export default function Signup() {
                 confirmPassword: Yup.string()
                   .required("Confirm Password is required")
                   .oneOf([Yup.ref("password"), null], "Password must match"),
-                businessName: Yup.string().required("Business name is required"),
-                businessAddress: Yup.string().required("Business address is required"),
+                businessName: Yup.string().required(
+                  "Business name is required"
+                ),
+                businessAddress: Yup.string().required(
+                  "Business address is required"
+                ),
               })}
               onSubmit={async (values) => {
-                console.log("Login", values);
-                dispatch(
-                  showToast({
-                    status: "success",
-                    message: "Sign up successful",
-                  })
-                );
-                navigate("/")
+                setLoading(true);
+                try {
+                  const userCredential = await createUserWithEmailAndPassword(
+                    auth,
+                    values.email,
+                    values.password
+                  );
+                  const user = userCredential.user;
+                  // Save extra info in Firestore
+                  await setDoc(doc(db, "users", user.uid), {
+                    name: values.name,
+                    email: values.email,
+                    phone: values.phone,
+                    businessName: values.businessName,
+                    businessAddress: values.businessAddress,
+                    createdAt: new Date(),
+                  });
+                  setLoading(false);
+
+                  dispatch(
+                    showToast({
+                      status: "success",
+                      message: "Sign up successful",
+                    })
+                  );
+                  navigate("/");
+                } catch (error) {
+                  setLoading(false);
+                  dispatch(
+                    showToast({
+                      status: "error",
+                      message: error.message,
+                    })
+                  );
+                }
               }}
             >
               <Form>

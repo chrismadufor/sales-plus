@@ -70,3 +70,10 @@ th,
 td {
   padding: 0 16px;
 }
+
+.auth_bg {
+  background-image: url("../src/assets/white-bg-4.jpg");
+  background-position: left;
+  background-repeat: no-repeat;
+  background-size: cover;
+}

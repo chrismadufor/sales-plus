@@ -5,13 +5,17 @@ import Modal from "./Modal";
 import { Formik, Form } from "formik";
 import * as Yup from "yup";
 import { showToast } from "../redux/slices/ToastSlice";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { TextLabelInput } from "./FormFields";
+import { addNewProduct } from "../services/dashboardService";
+import { errorHandler, formatDateTime, pounds } from "../utils/utils";
+import Spinner from "./Spinner";
 
-export default function AddProduct() {
+export default function AddProduct({refetch, currentPage}) {
+  const userId = useSelector((state) => state.auth.userId);
   const [showModal, setShowModal] = useState(false);
   const dispatch = useDispatch();
-  const loading = false;
+  const [loading, setLoading] = useState(false);
 
   const closeModal = () => setShowModal(false);
 
@@ -45,23 +49,43 @@ export default function AddProduct() {
                 validationSchema={Yup.object({
                   name: Yup.string().required("Product name is required"),
                   stock: Yup.number()
-                  .typeError('Stock must be a number')
-                  .required('Stock is required')
-                  .integer('Must be an integer')
-                  .positive('Stock must be a positive number'),
+                    .typeError("Stock must be a number")
+                    .required("Stock is required")
+                    .integer("Must be an integer")
+                    .positive("Stock must be a positive number"),
                   price: Yup.number()
-                  .typeError('Price must be a number')
-                  .required('Price is required')
-                  .positive('Price must be a positive number'),
+                    .typeError("Price must be a number")
+                    .required("Price is required")
+                    .positive("Price must be a positive number"),
                 })}
                 onSubmit={async (values) => {
-                  console.log("Login", values);
-                  dispatch(
-                    showToast({
-                      status: "success",
-                      message: "Log in successful",
-                    })
-                  );
+                  setLoading(true);
+                  let data = {
+                    ...values,
+                    qtySold: 0,
+                    userId: userId,
+                    createdAt: formatDateTime(new Date()),
+                  };
+                  const response = await addNewProduct(data);
+                  if (!response.error) {
+                    setLoading(false);
+                    dispatch(
+                      showToast({
+                        status: "success",
+                        message: "Product added successfully",
+                      })
+                    );
+                    closeModal();
+                    if (currentPage) refetch()
+                  } else {
+                    setLoading(false);
+                    dispatch(
+                      showToast({
+                        status: "error",
+                        message: errorHandler(response.data),
+                      })
+                    );
+                  }
                 }}
               >
                 <Form>
@@ -73,7 +97,7 @@ export default function AddProduct() {
                       placeholder="Iphone 14 Pro"
                     />
                     <TextLabelInput
-                      label="Price (€)"
+                      label={`Price (${pounds})`}
                       name="price"
                       type="number"
                       placeholder="1500"
